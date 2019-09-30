@@ -1,32 +1,18 @@
 ﻿using System.Collections.Generic;
-using WebApplication1.Controllers;
+using System.Threading;
 
 namespace WebApplication1.Adapter
 {
     public interface ISocketAdapter
     {
-        //string SendToSocket(string key, string message);
         void ReceiveFromSocket(string key, string responseMessage);
         string GetSocketResponse(string key);
     }
 
     public class SocketAdapter : ISocketAdapter
     {
-        private readonly System.Threading.EventWaitHandle _waitHandle = new System.Threading.AutoResetEvent(false);
-        //private readonly IMockSocket _socket;
         private readonly Dictionary<string, string> _dataQueue = new Dictionary<string, string>();
-
-        //public SocketAdapter(IMockSocket socket)
-        //{
-        //    _socket = socket;
-        //}
-
-        //public string SendToSocket(string key, string message)
-        //{
-        //    _socket.Send(message);
-
-        //    return GetSocketResponse(key);
-        //}
+        private readonly EventWaitHandle _waitHandle = new AutoResetEvent(false);
 
         public void ReceiveFromSocket(string key, string responseMessage)
         {
