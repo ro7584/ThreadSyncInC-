@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
@@ -19,11 +20,14 @@ namespace WebApplication1.Controllers
         }
 
         [HttpGet("home/{key}")]
-        public ActionResult<string> Index(string key)
+        public async Task<ActionResult<string>> Index(string key)
         {
-            _mockSocket.Send("any message to socket");
+            Action action = () =>
+             {
+                 _mockSocket.Send("any message to socket");
+             };
 
-            var responseMessage = _socketAdapter.GetSocketResponse(key);
+            var responseMessage = await _socketAdapter.GetSocketResponse(key, action);
 
             return responseMessage;
         }

@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace WebApplication1.Adapter
 {
     public interface ISocketAdapter
     {
         void ReceiveFromSocket(string key, string responseMessage);
-        string GetSocketResponse(string key);
+        Task<string> GetSocketResponse(string key, Action task);
     }
 
     public class SocketAdapter : ISocketAdapter
@@ -21,8 +23,12 @@ namespace WebApplication1.Adapter
             _waitHandle.Set();
         }
 
-        public string GetSocketResponse(string key)
+        public async Task<string> GetSocketResponse(string key, Action action)
         {
+            var taskCompletionSource = new TaskCompletionSource<string>();
+            Task task = new Task(action);
+            task.Start();
+
             while (true)
             {
                 _waitHandle.WaitOne();
@@ -32,11 +38,14 @@ namespace WebApplication1.Adapter
                     var responseMessage = _dataQueue[key];
                     _dataQueue.Remove(key);
 
-                    return responseMessage;
+                    taskCompletionSource.SetResult(responseMessage);
+                    break;
                 }
 
                 _waitHandle.Set();
             }
+
+            return await taskCompletionSource.Task;
         }
     }
 }
